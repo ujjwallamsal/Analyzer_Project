@@ -50,6 +50,8 @@ def check_naming(source_code):
             _check_class_name(node, violations)
         elif isinstance(node, ast.Assign):
             _check_assigned_variable_names(node, violations)
+        elif isinstance(node, ast.AnnAssign):
+            _check_annotated_variable_name(node, violations)
 
     return violations
 
@@ -87,6 +89,25 @@ def _check_assigned_variable_names(node, violations):
                 violations.append(
                     {"name": name, "type": "variable", "line": node.lineno}
                 )
+
+
+def _check_annotated_variable_name(node, violations):
+    """
+    Add a violation for a type-annotated assignment that is not
+    snake_case, e.g. "totalAmount: int = 10".
+
+    Python represents this as ast.AnnAssign, a different node type
+    from a plain assignment (ast.Assign), so it needs its own check.
+    Without this, a type-annotated variable could break naming rules
+    and never be flagged, even though "totalAmount = 10" (no type
+    hint) would be caught by _check_assigned_variable_names above.
+    """
+    if isinstance(node.target, ast.Name):
+        name = node.target.id
+        if _is_short_name(name):
+            return
+        if not SNAKE_CASE_PATTERN.match(name):
+            violations.append({"name": name, "type": "variable", "line": node.lineno})
 
 
 def _is_short_name(name):

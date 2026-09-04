@@ -89,6 +89,37 @@ def test_violation_includes_line_number():
     assert violations[0]["line"] == 3
 
 
+def test_type_annotated_variable_is_checked():
+    """Regression test: a type-annotated assignment (e.g. x: int = 5)
+    is a different AST node (AnnAssign) from a plain assignment
+    (Assign). An earlier version of this checker only looked at
+    Assign nodes, so a badly-named annotated variable slipped through
+    undetected even though the same name without a type hint was
+    correctly flagged. This test locks in the fix."""
+    source = "totalAmount: int = 10\n"
+    violations = check_naming(source)
+
+    assert len(violations) == 1
+    assert violations[0]["name"] == "totalAmount"
+    assert violations[0]["type"] == "variable"
+
+
+def test_correctly_named_annotated_variable_is_not_flagged():
+    """Normal case: a properly named annotated variable should not
+    be flagged, same as a properly named plain assignment."""
+    source = "total_amount: int = 10\n"
+    violations = check_naming(source)
+    assert violations == []
+
+
+def test_short_annotated_variable_name_is_allowed():
+    """Boundary case: the short-name exemption applies to annotated
+    assignments too, e.g. 'x: int = 5' should not be flagged."""
+    source = "x: int = 5\n"
+    violations = check_naming(source)
+    assert violations == []
+
+
 def test_two_letter_function_name_is_allowed():
     """Boundary case: very short function names (like 'ok') are common
     and exempt, same rule as short variable names."""
