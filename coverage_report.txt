@@ -1,0 +1,11 @@
+Name                           Stmts   Miss  Cover   Missing
+------------------------------------------------------------
+analyzer/__init__.py               0      0   100%
+analyzer/complexity.py            18      0   100%
+analyzer/duplicate_code.py        15      0   100%
+analyzer/metrics.py               22      0   100%
+analyzer/naming.py                36      0   100%
+analyzer/report.py                53      1    98%   117
+analyzer/unused_variables.py      31      0   100%
+------------------------------------------------------------
+TOTAL                            175      1    99%
