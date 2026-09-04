@@ -86,3 +86,24 @@ def test_nested_function_is_still_counted():
     result = calculate_metrics(source)
 
     assert result["function_count"] == 2
+
+
+def test_hash_inside_triple_quoted_string_is_not_a_comment():
+    """Regression test: a '#' character inside a multi-line string
+    (e.g. a docstring containing an example comment) is text, not a
+    real Python comment. An earlier version of this checker scanned
+    raw text line-by-line and could not tell the difference, so a
+    line like this was miscounted as a comment line even though it
+    is really part of a string literal assigned to a variable."""
+    source = (
+        "def f():\n"
+        "    text = \"\"\"\n"
+        "    # this is not a comment, it is inside a string\n"
+        "    just some text\n"
+        "    \"\"\"\n"
+        "    return text\n"
+    )
+    result = calculate_metrics(source)
+
+    assert result["comment_lines"] == 0
+    assert result["code_lines"] == 6
